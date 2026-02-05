@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Be My Valentine 💘</title>
+
+  <style>
+    :root{
+      --bg1:#0b1020;
+      --bg2:#151a33;
+      --card:#0f1428cc;
+      --text:#ffffff;
+      --muted:#c9c9c9;
+      --yes:#22c55e;
+      --no:#ef4444;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      overflow:hidden;
+      background:
+        radial-gradient(1200px 800px at 20% 10%, #ff3ea54a, transparent 60%),
+        radial-gradient(900px 700px at 80% 20%, #7c3aed4a, transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+
+    /* fundal inimioare */
+    .hearts{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:0;
+    }
+    .heart{
+      position:absolute;
+      bottom:-40px;
+      opacity:.85;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.25));
+      animation: floatUp linear forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes floatUp{
+      0%   { transform: translate(var(--x,0), 0) rotate(0deg); opacity:0; }
+      10%  { opacity:.9; }
+      100% { transform: translate(calc(var(--x,0) + var(--drift, 40px)), -110vh) rotate(var(--rot, 25deg)); opacity:0; }
+    }
+
+    /* confetti */
+    .confetti{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:6; /* peste overlay */
+    }
+    .conf{
+      position:absolute;
+      top:-20px;
+      width:10px;
+      height:14px;
+      border-radius:3px;
+      opacity:.95;
+      animation: confFall linear forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes confFall{
+      0%   { transform: translate(var(--x, 0), -20px) rotate(0deg); opacity:1; }
+      100% { transform: translate(calc(var(--x, 0) + var(--dx, 80px)), 110vh) rotate(var(--r, 360deg)); opacity:0; }
+    }
+
+    .wrap{
+      position:relative;
+      z-index:1;
+      height:100%;
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+
+    .card{
+      width:min(720px, 92vw);
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:26px;
+      box-shadow:var(--shadow);
+      padding:26px 22px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      text-align:center;
+    }
+
+    h1{
+      margin:0 0 14px;
+      font-size: clamp(28px, 5.5vw, 56px);
+      line-height:1.05;
+      font-weight:900;
+      letter-spacing:.5px;
+      text-transform: uppercase;
+    }
+    p{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size: 18px;
+      line-height:1.45;
+    }
+
+    .stage{
+      position:relative;
+      margin-top:18px;
+      height: 320px;
+      border-radius:22px;
+      border:1px dashed rgba(255,255,255,.18);
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+
+    .btn{
+      border:0;
+      padding:18px 22px;
+      border-radius:18px;
+      font-weight:900;
+      font-size:20px;
+      color:white;
+      cursor:pointer;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      transition: transform .12s ease, filter .12s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-width: 120px;
+    }
+    .btn:active{ transform: scale(.98); }
+    .btn:hover{ filter: brightness(1.05); }
+
+    .yes{ background: linear-gradient(180deg, #34d399, var(--yes)); }
+    .no{
+      background: linear-gradient(180deg, #fb7185, var(--no));
+      position:absolute;
+    }
+
+    .actions{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin-top:18px;
+      padding-top: 40px;
+    }
+
+    /* overlay YES */
+    .overlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      place-items:center;
+      background: rgba(0,0,0,.55);
+      z-index:5;
+      padding:24px;
+    }
+    .overlay.show{ display:grid; }
+    .pop{
+      width:min(760px, 92vw);
+      background: rgba(20, 24, 48, .95);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:26px;
+      padding:28px 22px;
+      text-align:center;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* popup style ca reel */
+    .yay{
+      font-size: clamp(30px, 5vw, 54px);
+      font-weight: 950;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+      color: #fff;
+      text-shadow: 0 0 14px rgba(255, 120, 180, .6);
+      animation: pop .55s ease-out, softGlow 1.6s infinite alternate;
+    }
+    .sub{
+      font-size: 18px;
+      color: rgba(255,255,255,.75);
+      margin-bottom: 16px;
+    }
+    .gifbox{
+      width: min(520px, 90%);
+      margin: 10px auto 14px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      background: rgba(255,255,255,.04);
+    }
+    .gifbox img{
+      display:block;
+      width:100%;
+      height:auto;
+    }
+    .love{
+      margin-top: 6px;
+      font-size: 18px;
+      color: rgba(255,255,255,.85);
+    }
+    @keyframes pop{
+      from{ transform: scale(.86); opacity: 0; }
+      to{ transform: scale(1); opacity: 1; }
+    }
+    @keyframes softGlow{
+      from{ text-shadow: 0 0 10px rgba(255, 120, 180, .45); }
+      to{ text-shadow: 0 0 22px rgba(255, 170, 220, .9); }
+    }
+
+    .close{
+      margin-top:18px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+
+    .hint{
+      font-size:12px;
+      opacity:.75;
+      margin-top:10px;
+    }
+
+    @media (max-width: 520px){
+      .stage{ height: 260px; }
+      .btn{ min-width: 120px; font-size:18px; }
+      p{ font-size:16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hearts" id="hearts"></div>
+  <div class="confetti" id="confetti"></div>
+
+  <!-- MUZICA (trebuie să existe): audio/raye-where-is-my-husband.mp3 -->
+  <audio id="song" preload="auto">
+    <source src="audio/raye-where-is-my-husband.mp3" type="audio/mpeg">
+  </audio>
+
+  <main class="wrap">
+    <section class="card">
+      <h1>SILVIU, WILL YOU BE MY VALENTINE? 💘</h1>
+      <p>Apasă YES 😄 (NO încearcă să fugă).</p>
+
+      <div class="stage" id="stage" aria-label="Zona cu butoane">
+        <div class="actions">
+          <button class="btn yes" id="yesBtn">YES</button>
+        </div>
+
+        <button class="btn no" id="noBtn" type="button">NO</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="pop">
+      <div class="yay">💖 YAY!!! 💖</div>
+      <div class="sub">Best decision ever 😘</div>
+
+      <div class="gifbox">
+        <!-- trebuie să existe: img/yes.gif -->
+        <img src="img/yes.gif" alt="Celebration gif">
+      </div>
+
+      <div class="love">I love you ❤️</div>
+
+      <button class="btn close" id="closeBtn">Închide</button>
+      <div class="hint">
+        Dacă muzica nu pornește: verifică mp3-ul în folderul <b>audio/</b> și apasă YES.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Inimioare care plutesc ======
+    const heartsWrap = document.getElementById("hearts");
+    const heartChars = ["💗","💖","💘","💕","💞","❤️","💜","🩷","💟"];
+
+    function spawnHeart(){
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+
+      const size = 14 + Math.random() * 30;  // 14..44
+      h.style.fontSize = size + "px";
+
+      const left = Math.random() * 100;
+      h.style.left = left + "vw";
+
+      const duration = 4 + Math.random() * 5; // 4..9s
+      h.style.animationDuration = duration + "s";
+
+      const drift = (Math.random() * 140 - 70); // -70..70px
+      const rot = (Math.random() * 110 - 55);   // -55..55deg
+      const x = (Math.random() * 50 - 25);      // -25..25px
+      h.style.setProperty("--drift", drift + "px");
+      h.style.setProperty("--rot", rot + "deg");
+      h.style.setProperty("--x", x + "px");
+
+      heartsWrap.appendChild(h);
+      setTimeout(() => h.remove(), duration * 1000);
+    }
+    setInterval(spawnHeart, 220);
+
+    // ====== Confetti burst ======
+    const confWrap = document.getElementById("confetti");
+
+    function spawnConfettiBurst(count = 140){
+      for (let i = 0; i < count; i++){
+        const c = document.createElement("div");
+        c.className = "conf";
+
+        const r = Math.floor(Math.random()*256);
+        const g = Math.floor(Math.random()*256);
+        const b = Math.floor(Math.random()*256);
+        c.style.background = `rgb(${r},${g},${b})`;
+
+        c.style.left = (Math.random() * 100) + "vw";
+
+        const dur = 2.2 + Math.random() * 2.6;
+        c.style.animationDuration = dur + "s";
+
+        const dx = (Math.random() * 240 - 120);
+        const rot = (Math.random() * 720 - 360);
+        c.style.setProperty("--x", "0px");
+        c.style.setProperty("--dx", dx + "px");
+        c.style.setProperty("--r", rot + "deg");
+
+        confWrap.appendChild(c);
+        setTimeout(() => c.remove(), dur * 1000);
+      }
+    }
+
+    // ====== Butonul NO fuge ======
+    const stage = document.getElementById("stage");
+    const noBtn  = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+
+    function placeNoInitial(){
+      const s = stage.getBoundingClientRect();
+      const x = Math.min(s.width - noBtn.offsetWidth - 16, s.width * 0.62);
+      const y = Math.min(s.height - noBtn.offsetHeight - 16, s.height * 0.62);
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+    }
+
+    function moveNoAway(pointerX, pointerY){
+      const s = stage.getBoundingClientRect();
+      const padding = 12;
+      const maxX = s.width - noBtn.offsetWidth - padding;
+      const maxY = s.height - noBtn.offsetHeight - padding;
+
+      let nx = Math.random() * Math.max(0, maxX);
+      let ny = Math.random() * Math.max(0, maxY);
+
+      if (pointerX != null && pointerY != null){
+        const localX = pointerX - s.left;
+        const localY = pointerY - s.top;
+        const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+
+        if (dist(nx, ny, localX, localY) < 140){
+          nx = (localX < s.width/2) ? (Math.random() * (maxX/2) + maxX/2) : (Math.random() * (maxX/2));
+          ny = (localY < s.height/2) ? (Math.random() * (maxY/2) + maxY/2) : (Math.random() * (maxY/2));
+        }
+      }
+
+      noBtn.style.left = nx + "px";
+      noBtn.style.top  = ny + "px";
+    }
+
+    noBtn.addEventListener("mouseenter", (e) => moveNoAway(e.clientX, e.clientY));
+    noBtn.addEventListener("mouseover",  (e) => moveNoAway(e.clientX, e.clientY));
+
+    noBtn.addEventListener("touchstart", (e) => {
+      const t = e.touches?.[0];
+      moveNoAway(t?.clientX, t?.clientY);
+      e.preventDefault();
+    }, { passive:false });
+
+    stage.addEventListener("touchstart", (e) => {
+      const t = e.touches?.[0];
+      const b = noBtn.getBoundingClientRect();
+      const near = (t.clientX >= b.left-20 && t.clientX <= b.right+20 &&
+                    t.clientY >= b.top-20  && t.clientY <= b.bottom+20);
+      if (near) moveNoAway(t.clientX, t.clientY);
+    }, { passive:true });
+
+    // ====== YES => overlay + inimioare + confetti + MUZICA ======
+    const overlay  = document.getElementById("overlay");
+    const closeBtn = document.getElementById("closeBtn");
+    const song     = document.getElementById("song");
+
+    async function playSong(){
+      // debug: dacă fișierul lipsește, îți arată în consolă
+      // (nu se vede pe pagină)
+      try{
+        song.currentTime = 0;
+        song.volume = 0.85;
+        await song.play();
+      }catch(err){
+        console.log("Audio error:", err);
+      }
+    }
+
+    yesBtn.addEventListener("click", async () => {
+      overlay.classList.add("show");
+
+      for (let i = 0; i < 25; i++){
+        setTimeout(spawnHeart, i * 35);
+      }
+      spawnConfettiBurst(160);
+
+      await playSong();
+    });
+
+    closeBtn.addEventListener("click", () => {
+      overlay.classList.remove("show");
+      song.pause();
+    });
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay){
+        overlay.classList.remove("show");
+        song.pause();
+      }
+    });
+
+    window.addEventListener("load", placeNoInitial);
+    window.addEventListener("resize", placeNoInitial);
+  </script>
+</body>
+</html>
